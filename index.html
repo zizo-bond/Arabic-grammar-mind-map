@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>خريطة ذهنية وتدريب تفاعلي للإعراب</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root{
+      --bg:#071022;
+      --card-bg: rgba(15,23,42,0.7);
+      --accent1: #10b981;
+      --accent2: #3b82f6;
+      --accent3: #8b5cf6;
+      --glass: rgba(255,255,255,0.04);
+    }
+    /* عام */
+    html,body{height:100%}
+    body{
+      font-family: 'Cairo', sans-serif;
+      margin:0;
+      background: linear-gradient(180deg,#051124 0%, var(--bg) 60%);
+      -webkit-font-smoothing:antialiased;
+      color:#e6eef8;
+      padding:0;
+    }
+
+    /* النافبار */
+    .navbar {
+      background: linear-gradient(135deg, rgba(21, 3, 63, 0.95), rgba(4, 28, 66, 0.95));
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar a {
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .navbar a:hover {
+      color: #fbbf24 !important;
+      transform: translateY(-2px);
+    }
+
+    .navbar a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #fbbf24;
+      transition: width 0.3s ease;
+    }
+
+    .navbar a:hover::after {
+      width: 100%;
+    }
+
+    #mindmap-app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px;}
+
+    /* عنوان */
+    .page-title{ text-align:center; margin-bottom:18px; }
+    .page-title h1{
+      font-weight:900;
+      font-size:2.4rem;
+      background: linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      animation: titlePulse 3s ease-in-out infinite;
+    }
+    @keyframes titlePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    .page-title p{color:#9fb2d3;margin-top:6px;}
+
+    /* الخريطة */
+    #mindmap{
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      gap:18px;
+      margin-top:14px;
+      flex-wrap:wrap;
+      padding:20px;
+      border-radius:14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+      min-height:260px;
+      position: relative;
+    }
+
+    /* كرت */
+    .node-card{
+      min-width:140px;
+      max-width:320px;
+      padding:18px;
+      padding-top: 38px;
+      border-radius:12px;
+      backdrop-filter: blur(8px);
+      background: var(--card-bg);
+      border:1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+      cursor:pointer;
+      transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .28s, opacity .28s;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .node-card:hover{ 
+      transform: translateY(-6px) scale(1.02); 
+      box-shadow: 0 18px 40px rgba(11, 78, 92, 0.35);
+    }
+    .node-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: rotate(45deg);
+      transition: all 0.5s;
+    }
+    .node-card:hover::before {
+      left: 100%;
+    }
+    .node-card .title{ font-weight:800; font-size:1.05rem; color:#fff; letter-spacing:.2px; margin-bottom:6px; }
+    .node-card .info{ font-size:.9rem; color:#cbd8ee; opacity:.95; margin-top:6px; line-height:1.35; }
+
+    /* شرائط لونية بمستوى */
+    .level-0{ border-left:6px solid var(--accent1); }
+    .level-1{ border-left:6px solid var(--accent2); }
+    .level-2{ border-left:6px solid var(--accent3); }
+    .level-3{ border-left:6px solid #ec4899; }
+    .level-4{ border-left:6px solid #f59e0b; }
+    .level-5{ border-left:6px solid #06b6d4; }
+
+    /* أيقونة السهم (التنقل) */
+    .toggle-icon{
+      position:absolute;
+      bottom:10px;
+      left:10px;
+      width:36px;height:36px;
+      display:flex;align-items:center;justify-content:center;
+      background: rgba(255,255,255,0.03);
+      border-radius:10px;
+      font-size:14px;color:#dff3ff;
+      transition: transform .24s;
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    
+    /* أيقونة الشرح (i) */
+    .info-icon{
+      position:absolute;
+      top:10px;
+      left:10px;
+      width:28px;height:28px;
+      display:flex;align-items:center;justify-content:center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius:50%;
+      font-size:16px; 
+      font-weight: 700;
+      color:var(--accent2);
+      cursor: help;
+      transition: all .24s;
+      z-index: 5;
+    }
+    .info-icon:hover {
+      background: var(--accent2);
+      color: var(--bg);
+      transform: scale(1.1) rotate(180deg);
+      box-shadow: 0 0 15px var(--accent2);
+    }
+    
+    /* خطوط الربط المتحركة */
+    .connection-line{
+      width:3px;
+      height:34px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      margin:8px auto 0;
+      border-radius:3px;
+      opacity:.7;
+      position: relative;
+      overflow: hidden;
+    }
+    .connection-line::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, transparent, var(--accent1), transparent);
+      animation: flowDown 2s infinite;
+    }
+    @keyframes flowDown {
+      0% { top: -100%; }
+      100% { top: 100%; }
+    }
+
+    /* سهم متفرع - تحسين */
+    .branch-arrow {
+      position: absolute;
+      width: 2px;
+      background: linear-gradient(180deg, var(--accent2), transparent);
+      opacity: 0.5;
+      animation: arrowGrow 0.5s ease-out forwards;
+    }
+    @keyframes arrowGrow {
+      from { height: 0; }
+      to { height: 40px; }
+    }
+
+    .fade-in{ animation: fadeUp .45s cubic-bezier(.2,.9,.3,1) both; }
+    @keyframes fadeUp{
+      from{ opacity:0; transform: translateY(10px) scale(.98); }
+      to{ opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    /* breadcrumb */
+    .breadcrumb{
+      display:flex;
+      gap:8px;
+      justify-content:center;
+      margin-top:14px;
+      margin-bottom:6px;
+      flex-wrap:wrap;
+    }
+    .crumb{
+      background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      padding:8px 12px;
+      border-radius:999px;
+      color:#cfe8ff;
+      font-weight:600;
+      font-size:.95rem;
+      border:1px solid rgba(255,255,255,0.03);
+      transition: all 0.3s ease;
+    }
+    .crumb:hover {
+      background: linear-gradient(90deg, rgba(16,185,129,0.2), rgba(59,130,246,0.2));
+      transform: scale(1.05);
+    }
+
+    /* زر العودة */
+    .back-btn{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      background: linear-gradient(90deg,var(--accent1),var(--accent2));
+      color:#012026;
+      padding:8px 14px;
+      border-radius:999px;
+      font-weight:700;
+      cursor:pointer;
+      border:none;
+      box-shadow: 0 8px 24px rgba(16,185,129,0.09);
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(16,185,129,0.2);
+    }
+
+    /* نافذة الشرح (Modal) */
+    #modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeInModal .3s both;
+    }
+    #modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--glass);
+      padding: 24px;
+      border-radius: 14px;
+      max-width: 500px;
+      width: 90%;
+      color: #e6eef8;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      position: relative;
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    #modal-close {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      line-height: 1;
+      transition: all 0.3s ease;
+    }
+    #modal-close:hover { 
+      color: var(--accent1);
+      transform: rotate(90deg);
+    }
+    #modal-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent1);
+      margin-bottom: 12px;
+      padding-left: 20px;
+    }
+    #modal-body {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: #dbeaff;
+    }
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* استجابة */
+    @media (max-width:900px){
+      #mindmap{ padding:14px; gap:12px; }
+      .node-card{ max-width:240px; padding:14px; padding-top: 38px;}
+      .page-title h1{ font-size:1.8rem; }
+    }
+  </style>
+
+  <style>
+    #interactive-quiz-container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--glass);
+      border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+    }
+    .quiz-title {
+      font-weight: 800;
+      font-size: 1.8rem;
+      text-align: center;
+      background: linear-gradient(90deg, var(--accent1), var(--accent3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 20px;
+    }
+    #quiz-sentence {
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-align: center;
+      color: #fff;
+      margin-bottom: 20px;
+      line-height: 1.8;
+      padding: 15px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 10px;
+    }
+    #quiz-sentence .highlight {
+      background-color: var(--accent3);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      box-shadow: 0 0 15px var(--accent3);
+      animation: highlightPulse 2s infinite;
+    }
+    @keyframes highlightPulse {
+      0%, 100% { box-shadow: 0 0 15px var(--accent3); }
+      50% { box-shadow: 0 0 25px var(--accent3); }
+    }
+    #quiz-question {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e6eef8;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #quiz-options {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .quiz-option {
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 2px solid rgba(255,255,255,0.1);
+      padding: 12px 20px;
+      border-radius: 10px;
+      color: #cfe8ff;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all .2s ease-in-out;
+      position: relative;
+      overflow: hidden;
+    }
+    .quiz-option::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(59,130,246,0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s;
+    }
+    .quiz-option:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    .quiz-option:hover {
+      background: var(--accent2);
+      color: var(--bg);
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+      border-color: var(--accent2);
+    }
+    #quiz-feedback {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      line-height: 1.7;
+    }
+    #quiz-feedback .final-answer {
+      color: var(--accent1);
+      background: rgba(16, 185, 129, 0.1);
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid var(--accent1);
+      animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    #quiz-nav {
+      text-align: center;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+    #quiz-nav button {
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color: #012026;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+      box-shadow: 0 8px 24px rgba(16,185,129,0.2);
+      transition: all 0.3s ease;
+    }
+    #quiz-nav button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(16,185,129,0.3);
+    }
+    #quiz-nav button:disabled {
+      background: #555;
+      color: #999;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    #quiz-counter {
+      font-weight: 600;
+      color: var(--accent3);
+      font-size: 1.1rem;
+    }
+  </style>
+  </head>
+<body>
+  
+  <!-- النافبار -->
+  <nav class="navbar">
+    <div class="container mx-auto px-6 py-3">
+      <div class="flex justify-between items-center">
+        <div class="text-2xl font-bold text-white">اختباراتي</div>
+        <div class="flex items-center space-x-6 space-x-reverse">
+          <div class="hidden md:flex space-x-4 space-x-reverse">
+            <a href="index.html" class="text-white hover:text-purple-600 transition-colors">الرئيسية</a>
+            <a href="choose.html" class="text-white hover:text-purple-600 transition-colors">الاختبارات</a>
+            <a href="contact.html" class="text-white hover:text-purple-600 transition-colors">تواصل معنا</a>
+          </div>
+          <div id="auth-container">
+            <div class="animate-pulse">
+              <div class="bg-white bg-opacity-20 rounded-lg h-10 w-24"></div>
+            </div>
+          </div>
+          <button id="mobile-menu-btn" class="md:hidden text-white hover:text-purple-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="mobile-menu" class="hidden md:hidden mt-4 py-2 border-t border-white border-opacity-20">
+        <a href="index.html" class="block py-2 text-white hover:text-purple-300">الرئيسية</a>
+        <a href="choose.html" class="block py-2 text-white hover:text-purple-300">الاختبارات</a>
+        <a href="contact.html" class="block py-2 text-white hover:text-purple-300">تواصل معنا</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="mindmap-app">
+    <div class="page-title">
+      <h1>خريطة ذهنية للإعراب</h1>
+      <p>تابع الخطوات المرتبة: اختر نوع الكلمة ← ثم موقعها ← ثم احتمالات إعرابها</p>
+    </div>
+
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div id="mindmap" aria-live="polite"></div>
+
+  </div>
+
+  <div id="modal-overlay">
+    <div id="modal-content">
+      <span id="modal-close">&times;</span>
+      <h2 id="modal-title"></h2>
+      <p id="modal-body"></p>
+    </div>
+  </div>
+
+  <div id="interactive-quiz-container">
+    <h2 class="quiz-title">🚀 تدريب إعرابي تفاعلي</h2>
+    
+    <div id="quiz-nav">
+      <button id="prev-quiz" disabled>السابق</button>
+      <span id="quiz-counter"></span>
+      <button id="next-quiz">التالي</button>
+    </div>
+    
+    <div id="quiz-sentence"></div>
+    <div id="quiz-question"></div>
+    <div id="quiz-options"></div>
+    <div id="quiz-feedback"></div>
+  </div>
+
+  <script>
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    /******** DATA ********/
+    const grammarData = {
+      id: 'root',
+      title: 'الكلمة',
+      children: [
+        {
+          id: 'ism',
+          title: 'اسم',
+          explanation: 'ما دل على معنى في نفسه ولم يقترن بزمن، مثل (إنسان، حيوان، جماد، صفة، معنى).',
+          children: [
+            {
+              id: 'ism-types',
+              title: 'أنواع الاسم',
+              explanation: 'الاسم ينقسم إلى معرب ومبني حسب تغير آخره أو ثباته.',
+              children: [
+                {
+                  id: 'ism-morab',
+                  title: 'اسم معرب',
+                  explanation: 'الاسم الذي يتغير شكل آخره (حركته) حسب موقعه في الجملة (مثل: جاء محمدٌ، رأيت محمداً، مررت بمحمدٍ).',
+                  children: [
+                    {
+                      id: 'ism-morab-positions',
+                      title: 'موقع الاسم في الجملة',
+                      explanation: 'اختر موقع الاسم لمعرفة حالته الإعرابية وعلاماتها.',
+                      children: [
+                        {
+                          id: 'marfoo-positions',
+                          title: '1️⃣ مواقع الرفع',
+                          explanation: 'اختر موقع الاسم المرفوع في الجملة.',
+                          children: [
+                            { 
+                              id: 'r-mubtada', 
+                              title: 'المبتدأ', 
+                              info: 'نحو: السماءُ صافيةٌ', 
+                              explanation: 'الاسم المرفوع الذي تبدأ به الجملة الاسمية.',
+                              children: [
+                                {
+                                  id: 'mubtada-signs',
+                                  title: 'علامات رفع المبتدأ',
+                                  children: [
+                                    { id: 'mubtada-damah', title: 'بالضمة', info: 'المفرد وجمع التكسير وجمع المؤنث السالم' },
+                                    { id: 'mubtada-waw', title: 'بالواو', info: 'جمع المذكر السالم والأسماء الخمسة' },
+                                    { id: 'mubtada-alif', title: 'بالألف', info: 'المثنى' }
+                                  ]
+                                }
+                              ]
+                            },
+                            { 
+                              id: 'r-khabar', 
+                              title: 'الخبر', 
+                              info: 'نحو: السماءُ صافيةٌ', 
+                              explanation: 'الاسم المرفوع الذي يُخبر به عن المبتدأ ويتمم معنى الجملة.',
+                              children: [
+                                {
+                                  id: 'khabar-signs',
+                                  title: 'علامات رفع الخبر',
+                                  children: [
+                                    { id: 'khabar-damah', title: 'بالضمة', info: 'المفرد وجمع التكسير وجمع المؤنث السالم' },
+                                    { id: 'khabar-waw', title: 'بالواو', info: 'جمع المذكر السالم والأسماء الخمسة' },
+                                    { id: 'khabar-alif', title: 'بالألف', info: 'المثنى' }
+                                  ]
+                                }
+                              ]
+                            },
+                            { 
+                              id: 'r-fael', 
+                              title: 'الفاعل', 
+                              info: 'نحو: جاءَ محمدٌ', 
+                              explanation: 'الاسم المرفوع الذي قام بالفعل أو اتصف به. نسأل عنه بـ (مَن؟) أو (ما؟). قد يكون عامله فعلاً (جاء محمدٌ) أو اسم فعل (هيهاتَ العُلُّمُ).',
+                              children: [
+                                {
+                                  id: 'fael-signs',
+                                  title: 'علامات رفع الفاعل',
+                                  children: [
+                                    { id: 'fael-damah', title: 'بالضمة', info: 'المفرد وجمع التكسير وجمع المؤنث السالم' },
+                                    { id: 'fael-waw', title: 'بالواو', info: 'جمع المذكر السالم والأسماء الخمسة' },
+                                    { id: 'fael-alif', title: 'بالألف', info: 'المثنى' }
+                                  ]
+                                }
+                              ]
+                            },
+                            { 
+                              id: 'r-naeb-fael', 
+                              title: 'نائب الفاعل', 
+                              info: 'نحو: كُتِبَ الدرسُ',
+                              explanation: 'اسم مرفوع يحل محل الفاعل بعد حذفه، ويأتي مع الفعل المبني للمجهول (المضموم أوله).',
+                              children: [
+                                {
+                                  id: 'naeb-signs',
+                                  title: 'علامات رفع نائب الفاعل',
+                                  children: [
+                                    { id: 'naeb-damah', title: 'بالضمة', info: 'المفرد وجمع التكسير وجمع المؤنث السالم' },
+                                    { id: 'naeb-waw', title: 'بالواو', info: 'جمع المذكر السالم والأسماء الخمسة' },
+                                    { id: 'naeb-alif', title: 'بالألف', info: 'المثنى' }
+                                  ]
+                                }
+                              ]
+                            },
+                            { 
+                              id: 'r-ism-kana', 
+                              title: 'اسم كان وأخواتها', 
+                              info: 'نحو: كان الجوُّ جميلاً',
+                              explanation: 'هو المبتدأ في الأصل، دخلت عليه كان أو إحدى أخواتها فرفعته اسماً لها.',
+                              children: [
+                                {
+                                  id: 'ism-kana-signs',
+                                  title: 'علامات رفع اسم كان',
+                                  children: [
+                                    { id: 'ism-kana-damah', title: 'بالضمة', info: 'المفرد وجمع التكسير وجمع المؤنث السالم' },
+                                    { id: 'ism-kana-waw', title: 'بالواو', info: 'جمع المذكر السالم والأسماء الخمسة' },
+                                    { id: 'ism-kana-alif', title: 'بالألف',info: 'المثنى' }
+                                  ]
+                                }
+                              ]
+                            },
+                            { 
+                              id: 'r-khabar-inna', 
+                              title: 'خبر إن وأخواتها', 
+                              info: 'نحو: إنَّ اللهَ غفورٌ',
+                              explanation: 'هو الخبر في الأصل، دخلت عليه إن أو إحدى أخواتها فرفعته خبراً لها.',
+                              children: [
+                                {
+                                  id: 'khabar-inna-signs',
+                                  title: 'علامات رفع خبر إن',
+                                  children: [
+                                    { id: 'khabar-inna-damah', title: 'بالضمة', info: 'المفرد وجمع التكسير وجمع المؤنث السالم' },
+                                    { id: 'khabar-inna-waw', title: 'بالواو', info: 'جمع المذكر السالم والأسماء الخمسة' },
+                                    { id: 'khabar-inna-alif', title: 'بالألف', info: 'المثنى' }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              id: 'r-ism-la-mohmala',
+                              title: 'اسم (لا) المهملة',
+                              info: 'نحو: لا طالبٌ مهملٌ',
+                              explanation: 'إذا أُهملت "لا" النافية للجنس (لفقدان شرط)، يُرفع الاسم بعدها على أنه مبتدأ.'
+                            },
+                            { 
+                              id: 'r-tabe-marfoo', 
+                              title: 'تابع لمرفوع', 
+                              info: 'النعت، العطف، التوكيد، البدل',
+                              explanation: 'اسم يتبع ما قبله (المتبوع) في حالة الرفع، مثل: جاء الطالبُ المجتهدُ.',
+                              children: [
+                                { id: 't-naat-r', title: 'النعت (الصفة)', explanation: 'يتبع المنعوت (المرفوع قبله) في الإعراب.' },
+                                { id: 't-atf-r', title: 'العطف', explanation: 'يتبع المعطوف عليه (المرفوع قبله) بواسطة حرف عطف.' },
+                                { id: 't-tawkeed-r', title: 'التوكيد', explanation: 'يتبع المؤكَّد (المرفوع قبله) في الإعراب (لفظي أو معنوي).' },
+                                { id: 't-badal-r', title: 'البدل', explanation: 'يتبع المبدل منه (المرفوع قبله) في الإعراب (مطابق، بعض من كل، اشتمال).' }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          id: 'mansoob-positions',
+                          title: '2️⃣ مواقع النصب',
+                          explanation: 'اختر موقع الاسم المنصوب في الجملة.',
+                          children: [
+                            { 
+                              id: 'r-mafool-bih', 
+                              title: 'المفعول به', 
+                              info: 'نحو: قرأتُ الكتابَ',
+                              explanation: 'اسم منصوب وقع عليه فعل الفاعل. نسأل عنه بـ (ماذا؟).',
+                              children: [
+                                {
+                                  id: 'mafool-bih-signs',
+                                  title: 'علامات نصب المفعول به',
+                                  children: [
+                                    { id: 'mafool-bih-fatha', title: 'بالفتحة', info: 'المفرد وجمع التكسير' },
+                                    { id: 'mafool-bih-kasra', title: 'بالكسرة', info: 'جمع المؤنث السالم' },
+                                    { id: 'mafool-bih-ya', title: 'بالياء', info: 'المثنى وجمع المذكر السالم' },
+                                    { id: 'mafool-bih-alif', title: 'بالألف', info: 'الأسماء الخمسة' }
+                                  ]
+                                }
+                              ]
+                            },
+                            { 
+                              id: 'r-mafool-mutlaq', 
+                              title: 'المفعول المطلق', 
+                              info: 'نحو: ركضتُ ركضاً',
+                              explanation: 'مصدر منصوب من لفظ الفعل، يُذكر لتوكيد الفعل أو بيان نوعه أو عدده.',
+                              children: [
+                                {
+                                  id: 'mafool-mutlaq-signs',
+                                  title: 'علامات نصب المفعول المطلق',
+                                  children: [
+                                    { id: 'mafool-mutlaq-fatha', title: 'بالفتحة', info: 'المفرد وجمع التكسير' },
+                                    { id: 'mafool-mutlaq-kasra', title: 'بالكسرة', info: 'جمع المؤنث السالم' },
+                                    { id: 'mafool-mutlaq-ya', title: 'بالياء', info: 'المثنى وجمع المذكر السالم' }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              id: 'r-mafool-liajlih',
+                              title: 'المفعول لأجله',
+                              info: 'نحو: أذاكرُ رغبةً في النجاح',
+                              explanation: 'مصدر قلبي منصوب يُبين سبب حدوث الفعل. نسأل عنه بـ (لماذا؟).'
+                            },
+                            {
+                              id: 'r-mafool-fih',
+                              title: 'المفعول فيه (الظرف)',
+                              info: 'نحو: سافرتُ ليلاً، جلستُ فوقَ الكرسي',
+                              explanation: 'اسم منصوب (ظرف زمان أو مكان) يُبين زمان أو مكان وقوع الفعل. نسأل عنه بـ (متى؟) أو (أين؟).'
+                            },
+                            {
+                              id: 'r-mafool-maah',
+                              title: 'المفعول معه',
+                              info: 'نحو: سرتُ والنيلَ',
+                              explanation: 'اسم منصوب يقع بعد واو (بمعنى "مع") مسبوقة بجملة، ليدل على المصاحبة.'
+                            },
+                            { 
+                              id: 'r-haal', 
+                              title: 'الحال', 
+                              info: 'نحو: جاءَ زيدٌ ضاحكاً',
+                              explanation: 'اسم نكرة منصوب يبين هيئة صاحبه وقت وقوع الفعل. نسأل عنه بـ (كيف؟).',
+                              children: [
+                                {
+                                  id: 'haal-signs',
+                                  title: 'علامات نصب الحال',
+                                  children: [
+                                    { id: 'haal-fatha', title: 'بالفتحة', info: 'المفرد وجمع التكسير' },
+                                    { id: 'haal-kasra', title: 'بالكسرة', info: 'جمع المؤنث السالم' },
+                                    { id: 'haal-ya', title: 'بالياء', info: 'المثنى وجمع المذكر السالم' }
+                                  ]
+                                }
+                              ]
+                            },
+                            { 
+                              id: 'r-tamyeez', 
+                              title: 'التمييز', 
+                              info: 'نحو: اشتريتُ عشرينَ كتاباً',
+                              explanation: 'اسم نكرة منصوب يوضح إبهاماً في كلمة أو جملة قبله.',
+                              children: [
+                                {
+                                  id: 'tamyeez-signs',
+                                  title: 'علامات نصب التمييز',
+                                  children: [
+                                    { id: 'tamyeez-fatha', title: 'بالفتحة', info: 'المفرد وجمع التكسير' },
+                                    { id: 'tamyeez-kasra', title: 'بالكسرة', info: 'جمع المؤنث السالم' },
+                                    { id: 'tamyeez-ya', title: 'بالياء', info: 'المثنى وجمع المذكر السالم' }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              id: 'r-mustathna',
+                              title: 'المستثنى',
+                              info: 'نحو: حضر الطلابُ إلا طالباً',
+                              explanation: 'اسم منصوب يقع بعد أداة استثناء (إلا). (هذا في حالة الاستثناء التام المثبت، وله حالات أخرى).'
+                            },
+                            {
+                              id: 'r-munada',
+                              title: 'المنادى (المعرب)',
+                              info: 'نحو: يا طالبَ العلمِ',
+                              explanation: 'اسم يقع بعد أداة نداء. يكون منصوباً إذا كان (مضافاً، شبيهاً بالمضاف، نكرة غير مقصودة).'
+                            },
+                            { 
+                              id: 'r-ism-inna', 
+                              title: 'اسم إن وأخواتها', 
+                              info: 'نحو: إنَّ اللهَ غفورٌ',
+                              explanation: 'هو المبتدأ في الأصل، دخلت عليه إن أو إحدى أخواتها فنصبته اسماً لها.',
+                              children: [
+                                {
+                                  id: 'ism-inna-signs',
+                                  title: 'علامات نصب اسم إن',
+                                  children: [
+                                    { id: 'ism-inna-fatha', title: 'بالفتحة', info: 'المفرد وجمع التكسير' },
+                                    { id: 'ism-inna-kasra', title: 'بالكسرة', info: 'جمع المؤنث السالم' },
+                                    { id: 'ism-inna-ya', title: 'بالياء', info: 'المثنى وجمع المذكر السالم' },
+                                    { id: 'ism-inna-alif', title: 'بالألف', info: 'الأسماء الخمسة' }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              id: 'r-ism-la-jins',
+                              title: 'اسم (لا) النافية للجنس',
+                              info: 'نحو: لا طالبَ مقصرٌ',
+                              explanation: 'اسم "لا" النافية للجنس (العاملة عمل إن). يكون منصوباً (إذا كان مضافاً أو شبيهاً بالمضاف) أو مبنياً على الفتح في محل نصب (إذا كان مفرداً).'
+                            },
+                            { 
+                              id: 'r-khabar-kana', 
+                              title: 'خبر كان وأخواتها', 
+                              info: 'نحو: كان الجوُّ جميلاً',
+                              explanation: 'هو الخبر في الأصل، دخلت عليه كان أو إحدى أخواتها فنصبته خبراً لها.',
+                              children: [
+                                {
+                                  id: 'khabar-kana-signs',
+                                  title: 'علامات نصب خبر كان',
+                                  children: [
+                                    { id: 'khabar-kana-fatha', title: 'بالفتحة', info: 'المفرد وجمع التكسير' },
+                                    { id: 'khabar-kana-kasra', title: 'بالكسرة', info: 'جمع المؤنث السالم' },
+                                    { id: 'khabar-kana-ya', title: 'بالياء', info: 'المثنى وجمع المذكر السالم' },
+                                    { id: 'khabar-kana-alif', title: 'بالألف', info: 'الأسماء الخمسة' }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              id: 'r-khabar-ma-la-laysa',
+                              title: 'خبر (ما) و (لا) المشبهتين بليس',
+                              info: 'نحو: ما هذا بشرٍا',
+                              explanation: '(ما) الحجازية و(لا) النافية للوحدة، تعملان عمل "ليس"، فتنصبان الخبر.'
+                            },
+                            { 
+                              id: 'r-tabe-mansoob', 
+                              title: 'تابع لمنصوب', 
+                              info: 'النعت، العطف، التوكيد، البدل',
+                              explanation: 'اسم يتبع ما قبله (المتبوع) في حالة النصب.',
+                              children: [
+                                { id: 't-naat-n', title: 'النعت (الصفة)', explanation: 'يتبع المنعوت (المنصوب قبله) في الإعراب.' },
+                                { id: 't-atf-n', title: 'العطف', explanation: 'يتبع المعطوف عليه (المنصوب قبله) بواسطة حرف عطف.' },
+                                { id: 't-tawkeed-n', title: 'التوكيد', explanation: 'يتبع المؤكَّد (المنصوب قبله) في الإعراب (لفظي أو معنوي).' },
+                                { id: 't-badal-n', title: 'البدل', explanation: 'يتبع المبدل منه (المنصوب قبله) في الإعراب.' }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          id: 'majroor-positions',
+                          title: '3️⃣ مواقع الجر',
+                          explanation: 'اختر موقع الاسم المجرور في الجملة.',
+                          children: [
+                            { 
+                              id: 'r-harf-jar', 
+                              title: 'المجرور بحرف الجر', 
+                              info: 'نحو: ذهبتُ إلى المدرسةِ',
+                              explanation: 'كل اسم يسبقه حرف جر. من أشهر حروف الجر: (من، إلى، عن، على، في، الباء، اللام، الكاف، رُبَّ، واو القسم، تاء القسم، حتى، منذُ، مُذْ).',
+                              children: [
+                                {
+                                  id: 'harf-jar-signs',
+                                  title: 'علامات جر المجرور بحرف',
+                                  children: [
+                                    { id: 'harf-jar-kasra', title: 'بالكسرة', info: 'المفرد وجمع التكسير وجمع المؤنث السالم' },
+                                    { id: 'harf-jar-ya', title: 'بالياء', info: 'المثنى وجمع المذكر السالم والأسماء الخمسة' },
+                                    { id: 'harf-jar-fatha', title: 'بالفتحة', info: 'الممنوع من الصرف' }
+                                  ]
+                                }
+                              ]
+                            },
+                            { 
+                              id: 'r-idafa', 
+                              title: 'المضاف إليه', 
+                              info: 'نحو: كتابُ الطالبِ جديدٌ',
+                              explanation: 'اسم مجرور يوضح اسماً نكرة قبله (المضاف). المضاف إليه دائماً مجرور.',
+                              children: [
+                                {
+                                  id: 'idafa-signs',
+                                  title: 'علامات جر المضاف إليه',
+                                  children: [
+                                    { id: 'idafa-kasra', title: 'بالكسرة', info: 'المفرد وجمع التكسير وجمع المؤنث السالم' },
+                                    { id: 'idafa-ya', title: 'بالياء', info: 'المثنى وجمع المذكر السالم والأسماء الخمسة' },
+                                    { id: 'idafa-fatha', title: 'بالفتحة', info: 'الممنوع من الصرف' }
+                                  ]
+                                }
+                              ]
+                            },
+                            { 
+                              id: 'r-tabe-majroor', 
+                              title: 'تابع لمجرور', 
+                              info: 'النعت، العطف، التوكيد، البدل',
+                              explanation: 'اسم يتبع ما قبله (المتبوع) في حالة الجر.',
+                              children: [
+                                { id: 't-naat-j', title: 'النعت (الصفة)', explanation: 'يتبع المنعوت (المجرور قبله) في الإعراب.' },
+                                { id: 't-atf-j', title: 'العطف', explanation: 'يتبع المعطوف عليه (المجرور قبله) بواسطة حرف عطف.' },
+                                { id: 't-tawkeed-j', title: 'التوكيد', explanation: 'يتبع المؤكَّد (المجرور قبله) في الإعراب (لفظي أو معنوي).' },
+                                { id: 't-badal-j', title: 'البدل', explanation: 'يتبع المبدل منه (المجرور قبله) في الإعراب.' }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'ism-mabni',
+                  title: 'اسم مبني',
+                  explanation: 'الاسم الذي يلزم آخره حركة واحدة مهما تغير موقعه في الجملة (مثل: هذا، الذي، مَن).',
+                  children: [
+                    { id: 'mb1', title: 'الضمائر', info: 'مثال: أنا، أنتَ، هو، نحن', explanation: 'كل الضمائر (المتصلة والمنفصلة) مبنية.' },
+                    { id: 'mb2', title: 'أسماء الإشارة', info: 'مثال: هذا، هذه، ذلك، هؤلاء', explanation: 'كلها مبنية ما عدا (هذان/هاتان) فإنهما يُعربان إعراب المثنى.' },
+                    { id: 'mb3', title: 'الأسماء الموصولة', info: 'مثال: الذي، التي، الذين', explanation: 'كلها مبنية ما عدا (اللذان/اللتان) فإنهما يُعربان إعراب المثنى.' },
+                    { id: 'mb4', title: 'أسماء الاستفهام', info: 'مثال: مَن، ما، متى، أين', explanation: 'كلها مبنية ما عدا (أي) فهي معربة.' },
+                    { id: 'mb5', title: 'أسماء الشرط', info: 'مثال: مَن، ما، متى، أينما', explanation: 'كلها مبنية ما عدا (أي) فهي معربة.' },
+                    { id: 'mb6', title: 'بعض الظروف', info: 'مثال: حيثُ، أمسُ، الآنَ', explanation: 'بعض الظروف تكون مبنية على حركة آخرها.' },
+                    { id: 'mb7', title: 'أسماء الأفعال', info: 'مثال: هيهاتَ، شتَّانَ، صهْ', explanation: 'كلمات تدل على معنى الفعل لكنها لا تقبل علاماته.' },
+                    { id: 'mb8', title: 'المنادى (المبني)', info: 'مثال: يا محمدُ، يا رجلُ', explanation: 'المنادى العلم المفرد أو النكرة المقصودة يُبنى على ما يُرفع به (مثل الضم) ويكون في محل نصب.' }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'feel',
+          title: 'فعل',
+          explanation: 'ما دل على حدث مقترن بزمن (ماضٍ، مضارع، أمر).',
+          children: [
+            {
+              id: 'feel-types',
+              title: 'أنواع الفعل',
+              explanation: 'اختر نوع الفعل حسب زمنه.',
+              children: [
+                {
+                  id: 'feel-madi',
+                  title: 'فعل ماضٍ',
+                  explanation: 'الفعل الذي حدث وانتهى قبل زمن التكلم. وهو مبني دائماً ولا يكون معرباً أبداً.',
+                  children: [
+                    { id: 'f1', title: 'مبني على الفتح', info: 'مثال: كتبَ، ذهبَ، لعبَ', explanation: 'الأصل فيه البناء على الفتح، أو إذا اتصلت به تاء التأنيث أو ألف الاثنين.' },
+                    { id: 'f2', title: 'مبني على السكون', info: 'مثال: كتبْتُ، كتبْنا', explanation: 'يُبنى على السكون إذا اتصلت به (تاء الفاعل، نا الفاعلين، نون النسوة).' },
+                    { id: 'f3', title: 'مبني على الضم', info: 'مثال: كتبُوا', explanation: 'يُبنى على الضم في حالة واحدة: إذا اتصلت به واو الجماعة.' }
+                  ]
+                },
+                {
+                  id: 'feel-modare',
+                  title: 'فعل مضارع',
+                  explanation: 'الفعل الذي يحدث الآن (في زمن التكلم) أو في المستقبل. وهو الفعل الوحيد الذي يأتي (معرباً) وأحياناً (مبنياً).',
+                  children: [
+                    {
+                      id: 'modare-states',
+                      title: 'حالة الفعل المضارع',
+                      explanation: 'اختر: هل الفعل معرب أم مبني؟',
+                      children: [
+                        {
+                          id: 'modare-morab',
+                          title: 'مضارع معرب',
+                          explanation: 'يكون معرباً (مرفوعاً، منصوباً، مجزوماً) إذا لم تتصل به نون النسوة أو نون التوكيد.',
+                          children: [
+                            {
+                              id: 'modare-marfoo',
+                              title: '▶ مرفوع',
+                              explanation: 'يُرفع إذا لم يسبقه أداة نصب أو جزم.',
+                              children: [
+                                { id: 'f4', title: 'مرفوع بالضمة', info: 'مثال: يكتبُ، تلعبُ' },
+                                { id: 'f5', title: 'مرفوع بثبوت النون', info: 'مثال: يكتبون، تكتبين', explanation: 'يُرفع بثبوت النون إذا كان من الأفعال الخمسة.' }
+                              ]
+                            },
+                            {
+                              id: 'modare-mansoob',
+                              title: '▶ منصوب',
+                              explanation: 'يُنصب إذا سبقته أداة نصب (مثل: أن، لن، كي، حتى...).',
+                              children: [
+                                { id: 'f6', title: 'منصوب بالفتحة', info: 'مثال: لن يكتبَ، كي تلعبَ' },
+                                { id: 'f7', title: 'منصوب بحذف النون', info: 'مثال: لن يكتبوا', explanation: 'يُنصب بحذف النون إذا كان من الأفعال الخمسة.' }
+                              ]
+                            },
+                            {
+                              id: 'modare-majzoom',
+                              title: '▶ مجزوم',
+                              explanation: 'يُجزم إذا سبقته أداة جزم (مثل: لم، لا الناهية، لام الأمر).',
+                              children: [
+                                { id: 'f8', title: 'مجزوم بالسكون', info: 'مثال: لم يكتبْ، لا تلعبْ' },
+                                { id: 'f9', title: 'مجزوم بحذف النون', info: 'مثال: لم يكتبوا', explanation: 'يُجزم بحذف النون إذا كان من الأفعال الخمسة.' },
+                                { id: 'f10', title: 'مجزوم بحذف حرف العلة', info: 'مثال: لم يسعَ، لم يرمِ', explanation: 'يُجزم بحذف حرف العلة إذا كان معتل الآخر (آخره: ا، و، ي).' }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          id: 'modare-mabni',
+                          title: 'مضارع مبني',
+                          explanation: 'يُبنى الفعل المضارع في حالتين فقط.',
+                          children: [
+                            { id: 'f11', title: 'مبني على السكون', info: 'مثال: يكتبْنَ', explanation: 'يُبنى على السكون إذا اتصلت به (نون النسوة).' },
+                            { id: 'f12', title: 'مبني على الفتح', info: 'مثال: يكتبَنّ', explanation: 'يُبنى على الفتح إذا اتصلت به (نون التوكيد الثقيلة أو الخفيفة).' }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'feel-amr',
+                  title:'فعل أمر',
+                  explanation: 'الفعل الذي يُطلب به حدوث شيء في المستقبل. وهو مبني دائماً.',
+                  children: [
+                    { id: 'f13', title: 'مبني على السكون', info: 'مثال: اكتبْ، العبْ', explanation: 'الأصل فيه البناء على السكون (إذا كان صحيح الآخر).' },
+                    { id: 'f14', title: 'مبني على الفتح', info: 'مثال: اكتبَنّ', explanation: 'يُبنى على الفتح إذا اتصلت به نون التوكيد.' },
+                    { id: 'f15', title: 'مبني على حذف النون', info: 'مثال: اكتبوا، اكتبي', explanation: 'يُبنى على حذف النون إذا كان مضارعه من الأفعال الخمسة (اتصلت به واو الجماعة، ألف الاثنين،ياء المخاطبة).' },
+                    { id: 'f16', title: 'مبني على حذف حرف العلة', info: 'مثال: اسعَ، ارمِ', explanation: 'يُبنى على حذف حرف العلة إذا كان معتل الآخر.' }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'harf',
+          title: 'حرف',
+          info: 'مبني دائماً (لا محل له من الإعراب)',
+          explanation: 'ما ليس له معنى في نفسه، بل مع غيره (مثل حروف الجر والعطف). كل الحروف مبنية ولا محل لها من الإعراب.',
+          children: [
+            { 
+              id: 'h1', 
+              title: 'حروف الجر', 
+              info: 'مثال: من، إلى، على، في، عن',
+              children: [{ id: 'h1a', title: 'ما بعدها: اسم مجرور', explanation: 'الاسم الذي يأتي بعد حرف الجر يكون مجروراً.' }]
+            },
+            { 
+              id: 'h2', 
+              title: 'حروف العطف', 
+              info: 'مثال: و، ف، ثم، أو، لكن، بل',
+              children: [{ id: 'h2a', title: 'ما بعدها: اسم معطوف', explanation: 'يتبع ما قبله (المعطوف عليه) في الإعراب (رفعاً ونصباً وجراً).' }]
+            },
+            { 
+              id: 'h3', 
+              title: 'حروف النصب', 
+              info: 'مثال: أن، لن، كي، حتى، لام التعليل',
+              children: [{ id: 'h3a', title: 'ما بعدها: فعل مضارع منصوب', explanation: 'الفعل المضارع الذي يأتي بعدها يكون منصوباً.' }]
+            },
+            { 
+              id: 'h4', 
+              title: 'حروف الجزم', 
+              info: 'مثال: لم، لما، لام الأمر، لا الناهية',
+              children: [{ id: 'h4a', title: 'ما بعدها: فعل مضارع مجزوم', explanation: 'الفعل المضارع الذي يأتي بعدها يكون مجزوماً.' }]
+            },
+            { 
+              id: 'h5', 
+              title: 'حروف النداء', 
+              info: 'مثال: يا، أيا، هيا، أي',
+              children: [{ id: 'h5a', title: 'ما بعدها: منادى', explanation: 'الاسم الذي يأتي بعدها هو المنادى (ويكون منصوباً أو مبنياً في محل نصب).' }]
+            },
+            { 
+              id: 'h6', 
+              title: 'حروف الاستفهام', 
+              info: 'مثال: هل، الهمزة',
+              children: [{ id: 'h6a', title: 'لا تؤثر إعرابياً', explanation: 'هل والهمزة لا تؤثران في إعراب ما بعدهما.' }]
+            },
+            { 
+              id: 'h7', 
+              title: 'حروف النفي', 
+              info: 'مثال: لا، ما، لن، لم',
+              children: [{ id: 'h7a', title: 'حسب نوع الحرف', explanation: 'منها ما لا يعمل (ما، لا)، ومنها ما يجزم (لم، لما)، ومنها ما ينصب (لن).' }]
+            },
+            { 
+              id: 'h8', 
+              title: 'حروف التوكيد', 
+              info: 'مثال: إن، أن، قد، نون التوكيد',
+              children: [{ id: 'h8a', title: 'حسب نوع الحرف', explanation: 'إنَّ وأنَّ (تنصب الاسم وترفع الخبر)، قد (لا تؤثر على الماضي)، نون التوكيد (تبني الفعل).' }]
+            },
+            { 
+              id: 'h9', 
+              title: 'حروف التشبيه', 
+              info: 'مثال: كأن، كـ',
+              children: [{ id: 'h9a', title: 'حسب نوع الحرف', explanation: 'كأنَّ (من أخوات إن، تنصب الاسم وترفع الخبر)، الكاف (حرف جر).' }]
+            }
+          ]
+        }
+      ]
+    };
+
+    /******** STATE ********/
+    let currentPath = [];
+    const mindmapEl = document.getElementById('mindmap');
+    const breadcrumbEl = document.getElementById('breadcrumb');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const modalClose = document.getElementById('modal-close');
+    
+    /******** HELPERS ********/
+    function findNodeById(node, id){
+      if(node.id === id) return node;
+      if(!node.children) return null;
+      for(const c of node.children){
+        const found = findNodeById(c, id);
+        if(found) return found;
+      }
+      return null;
+    }
+
+    function getNodeTitlePath(){
+      return currentPath.map(id => {
+        const n = findNodeById(grammarData,id);
+        return n? n.title : id;
+      });
+    }
+
+    /******** RENDERING ********/
+    function renderBreadcrumb(){
+      breadcrumbEl.innerHTML = '';
+      const path = ['الكلمة', ...getNodeTitlePath()];
+      path.forEach((p, idx) => {
+        const span = document.createElement('div');
+        span.className = 'crumb';
+        span.textContent = p;
+        breadcrumbEl.appendChild(span);
+      });
+      if(currentPath.length > 0){
+        const back = document.createElement('button');
+        back.className = 'back-btn ml-2';
+        back.innerHTML = '⬅ العودة';
+        back.onclick = () => {
+          currentPath.pop();
+          render();
+        };
+        breadcrumbEl.prepend(back);
+      }
+    }
+
+    function createCard(node, level = 0){
+      const el = document.createElement('div');
+      el.className = `node-card level-${Math.min(level,5)} fade-in`;
+      el.setAttribute('data-id', node.id);
+      
+      const title = document.createElement('div');
+      title.className = 'title';
+      title.textContent = node.title;
+      el.appendChild(title);
+      if(node.info){
+        const info = document.createElement('div');
+        info.className = 'info';
+        info.textContent = node.info;
+        el.appendChild(info);
+      }
+
+      if(node.children && node.children.length > 0){
+        const icon = document.createElement('div');
+        icon.className = 'toggle-icon';
+        icon.innerHTML = '&#x25BC;';
+        el.appendChild(icon);
+      }
+      
+      if(node.explanation){
+        const infoIcon = document.createElement('div');
+        infoIcon.className = 'info-icon';
+        infoIcon.innerHTML = '&#9432;';
+        infoIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showExplanation(node.title, node.explanation);
+        });
+        el.appendChild(infoIcon);
+      }
+
+      el.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(node.children && node.children.length > 0){
+          currentPath.push(node.id);
+          render();
+          return;
+        }
+        el.animate([{transform:'scale(1)'},{transform:'scale(0.99)'},{transform:'scale(1)'}],{duration:220,fill:'both'});
+      });
+      return el;
+    }
+
+    function renderNodesFor(node, level = 0){
+      const container = document.createElement('div');
+      container.className = 'flex flex-wrap justify-center gap-6';
+      if(!node.children) return container;
+      node.children.forEach(child=>{
+        const col = document.createElement('div');
+        col.style.display = 'flex';
+        col.style.flexDirection = 'column';
+        col.style.alignItems = 'center';
+        const card = createCard(child, level);
+        col.appendChild(card);
+        if(child.children && child.children.length > 0){
+          const line = document.createElement('div');
+          line.className = 'connection-line';
+          col.appendChild(line);
+        }
+        container.appendChild(col);
+      });
+      return container;
+    }
+
+    function render(){
+      mindmapEl.innerHTML = '';
+      if(currentPath.length === 0){
+        const root = grammarData;
+        const nodesWrap = document.createElement('div');
+        nodesWrap.className = 'flex flex-wrap justify-center gap-6';
+        root.children.forEach(child=>{
+          const card = createCard(child, 0);
+          nodesWrap.appendChild(card);
+        });
+        mindmapEl.appendChild(nodesWrap);
+      } else {
+        const lastId = currentPath[currentPath.length - 1];
+        const lastNode = findNodeById(grammarData, lastId);
+        if(!lastNode){
+          currentPath = [];
+          render();
+          return;
+        }
+        const branchTitle = document.createElement('div');
+        branchTitle.style.width = '100%';
+        branchTitle.style.textAlign = 'center';
+        branchTitle.style.marginBottom = '10px';
+        branchTitle.innerHTML = `<div style="font-weight:900;font-size:1.05rem;color:#dff6ff">${lastNode.title}</div>`;
+        mindmapEl.appendChild(branchTitle);
+
+        const nodesContainer = renderNodesFor(lastNode, 1);
+        mindmapEl.appendChild(nodesContainer);
+      }
+      renderBreadcrumb();
+    }
+
+    function showExplanation(title, explanation){
+      modalTitle.textContent = title;
+      modalBody.textContent = explanation;
+      modalOverlay.style.display = 'flex';
+    }
+    
+    function hideExplanation(){
+      modalOverlay.style.display = 'none';
+    }
+    
+    modalClose.addEventListener('click', hideExplanation);
+    modalOverlay.addEventListener('click', (e) => {
+      if(e.target === modalOverlay){
+        hideExplanation();
+      }
+    });
+    render();
+
+    document.addEventListener('click', (e)=>{
+      const isInsideApp = e.target.closest && e.target.closest('#mindmap-app');
+      if(!isInsideApp && currentPath.length > 0){
+        if(modalOverlay.style.display === 'flex') return;
+        currentPath.pop();
+        render();
+      }
+    });
+
+    /*******************************************************************/
+    /******** 💡💡 منطق التدريب التفاعلي (مع تمرينات إضافية) 💡💡 ********/
+    /*******************************************************************/
+
+    const quizData = [
+      {
+        sentence: "قرأَ الطالبُ الكتابَ.",
+        word: "الطالبُ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «الطالب»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هو «معرب» (يتغير آخره) أم «مبني» (يلزم حالة واحدة)؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالته الإعرابية؟ (لاحظ الجملة: 'قرأ الطالبُ...')",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 0
+          },
+          {
+            question: "4. ما سبب الرفع؟ (من الذي قرأ؟)",
+            options: ["مبتدأ", "خبر", "فاعل"],
+            correctIndex: 2
+          }
+        ],
+        finalIraab: "فاعل مرفوع وعلامة رفعه الضمة الظاهرة على آخره."
+      },
+      {
+        sentence: "إنَّ السماءَ صافيةٌ.",
+        word: "صافيةٌ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «صافيةٌ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟ (لاحظ 'إنَّ' في بداية الجملة)",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 0
+          },
+          {
+            question: "4. ما سبب الرفع؟ (إنَّ تنصب الاسم و...)",
+            options: ["خبر إنَّ", "فاعل", "نعت"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "خبر إنَّ مرفوع وعلامة رفعه الضمة الظاهرة على آخره."
+      },
+      {
+        sentence: "الطالبُ لم يكتبْ الدرسَ.",
+        word: "يكتبْ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «يكتبْ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 1
+          },
+          {
+            question: "2. ما زمن هذا الفعل؟",
+            options: ["ماضٍ", "مضارع", "أمر"],
+            correctIndex: 1
+          },
+          {
+            question: "3. هل هو «معرب» أم «مبني»؟ (هل اتصلت به نون النسوة أو التوكيد؟)",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "4. ما حالته الإعرابية؟ (لاحظ أنه سُبق بـ «لم»)",
+            options: ["مرفوع", "منصوب", "مجزوم"],
+            correctIndex: 2
+          },
+          {
+            question: "5. ما علامة جزمه؟ (الفعل 'يكتب' صحيح الآخر)",
+            options: ["السكون", "حذف النون", "حذف حرف العلة"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "فعل مضارع مجزوم بـ 'لم' وعلامة جزمه السكون الظاهر على آخره."
+      },
+      {
+        sentence: "كرَّم المديرُ الطالبيْنِ.",
+        word: "الطالبيْنِ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «الطالبيْنِ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟ (على من وقع التكريم؟)",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 1
+          },
+          {
+            question: "4. ما سبب النصب؟",
+            options: ["مفعول به", "حال", "تمييز"],
+            correctIndex: 0
+          },
+          {
+            question: "5. ما علامة نصبها؟ (الكلمة تدل على اثنين)",
+            options: ["الفتحة", "الكسرة", "الياء"],
+            correctIndex: 2
+          }
+        ],
+        finalIraab: "مفعول به منصوب وعلامة نصبه الياء لأنه مثنى."
+      },
+      {
+        sentence: "ذهبتُ إلى المدرسةِ.",
+        word: "المدرسةِ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «المدرسةِ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟ (لاحظ ما قبلها)",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 2
+          },
+          {
+            question: "4. ما سبب الجر؟",
+            options: ["مضاف إليه", "مسبوق بحرف جر", "نعت"],
+            correctIndex: 1
+          },
+          {
+            question: "5. ما علامة جرها؟",
+            options: ["الكسرة", "الفتحة", "الياء"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "اسم مجرور بـ 'إلى' وعلامة جره الكسرة الظاهرة."
+      },
+      {
+        sentence: "هذا ولدٌ مؤدبٌ.",
+        word: "هذا",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «هذا»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 1
+          },
+          {
+            question: "3. ما نوع هذا الاسم المبني؟",
+            options: ["ضمير", "اسم إشارة", "اسم موصول"],
+            correctIndex: 1
+          },
+          {
+            question: "4. ما موقعه الإعرابي؟ (جاء في بداية الجملة)",
+            options: ["في محل رفع مبتدأ", "في محل نصب مفعول به", "لا محل له"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "اسم إشارة مبني على السكون في محل رفع مبتدأ."
+      },
+      {
+        sentence: "استيقظتُ وطلوعَ الفجرِ.",
+        word: "طلوعَ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «طلوعَ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟ (لاحظ الواو التي بمعنى 'مع')",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 1
+          },
+          {
+            question: "4. ما سبب النصب؟",
+            options: ["مفعول به", "مفعول معه", "مفعول لأجله"],
+            correctIndex: 1
+          }
+        ],
+        finalIraab: "مفعول معه منصوب وعلامة نصبه الفتحة الظاهرة."
+      },
+      // *** تمرينات إضافية ***
+      {
+        sentence: "المعلمون يشرحون الدرسَ.",
+        word: "المعلمون",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «المعلمون»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 0
+          },
+          {
+            question: "4. ما سبب الرفع؟",
+            options: ["مبتدأ", "خبر", "فاعل"],
+            correctIndex: 0
+          },
+          {
+            question: "5. ما علامة رفعها؟ (جمع مذكر سالم)",
+            options: ["الضمة", "الواو", "الألف"],
+            correctIndex: 1
+          }
+        ],
+        finalIraab: "مبتدأ مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم."
+      },
+      {
+        sentence: "كتابُ الطالبِ مفيدٌ.",
+        word: "الطالبِ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «الطالبِ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 2
+          },
+          {
+            question: "4. ما سبب الجر؟",
+            options: ["مضاف إليه", "مسبوق بحرف جر", "نعت"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "مضاف إليه مجرور وعلامة جره الكسرة الظاهرة."
+      },
+      {
+        sentence: "جاء محمدٌ ضاحكاً.",
+        word: "ضاحكاً",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «ضاحكاً»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 1
+          },
+          {
+            question: "4. ما سبب النصب؟ (تبين هيئة محمد)",
+            options: ["مفعول به", "حال", "تمييز"],
+            correctIndex: 1
+          }
+        ],
+        finalIraab: "حال منصوب وعلامة نصبه الفتحة الظاهرة."
+      },
+      {
+        sentence: "اشتريتُ عشرينَ كتاباً.",
+        word: "كتاباً",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «كتاباً»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 1
+          },
+          {
+            question: "4. ما سبب النصب؟ (توضح العدد)",
+            options: ["مفعول به", "حال", "تمييز"],
+            correctIndex: 2
+          }
+        ],
+        finalIraab: "تمييز منصوب وعلامة نصبه الفتحة الظاهرة."
+      },
+      {
+        sentence: "الكتابُ الذي قرأتُه مفيدٌ.",
+        word: "الذي",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «الذي»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 1
+          },
+          {
+            question: "3. ما نوع هذا الاسم المبني؟",
+            options: ["ضمير", "اسم إشارة", "اسم موصول"],
+            correctIndex: 2
+          },
+          {
+            question: "4. ما موقعه الإعرابي؟",
+            options: ["في محل رفع نعت", "في محل نصب", "لا محل له"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "اسم موصول مبني في محل رفع نعت."
+      },
+      {
+        sentence: "ركضتُ ركضاً سريعاً.",
+        word: "ركضاً",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «ركضاً»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 1
+          },
+          {
+            question: "4. ما سبب النصب؟ (مصدر من لفظ الفعل)",
+            options: ["مفعول به", "مفعول مطلق", "مفعول لأجله"],
+            correctIndex: 1
+          }
+        ],
+        finalIraab: "مفعول مطلق منصوب وعلامة نصبه الفتحة الظاهرة."
+      },
+      {sentence: "أذاكرُ رغبةً في النجاحِ.",
+        word: "رغبةً",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «رغبةً»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 1
+          },
+          {
+            question: "4. ما سبب النصب؟ (توضح السبب)",
+            options: ["مفعول به", "مفعول مطلق", "مفعول لأجله"],
+            correctIndex: 2
+          }
+        ],
+        finalIraab: "مفعول لأجله منصوب وعلامة نصبه الفتحة الظاهرة."
+      },
+      {
+        sentence: "سافرتُ ليلاً.",
+        word: "ليلاً",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «ليلاً»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 1
+          },
+          {
+            question: "4. ما سبب النصب؟ (ظرف زمان)",
+            options: ["مفعول به", "مفعول فيه", "حال"],
+            correctIndex: 1
+          }
+        ],
+        finalIraab: "مفعول فيه (ظرف زمان) منصوب وعلامة نصبه الفتحة الظاهرة."
+      },
+      {
+        sentence: "يا محمدُ اجتهدْ.",
+        word: "محمدُ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «محمدُ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هو «معرب» أم «مبني»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 1
+          },
+          {
+            question: "3. ما نوعه؟ (جاء بعد أداة نداء)",
+            options: ["منادى علم مفرد", "منادى مضاف", "منادى نكرة"],
+            correctIndex: 0
+          },
+          {
+            question: "4. ما موقعه الإعرابي؟",
+            options: ["مبني على الضم في محل نصب", "منصوب", "مرفوع"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "منادى مبني على الضم في محل نصب."
+      },
+      {
+        sentence: "كان الجوُّ بارداً.",
+        word: "بارداً",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «بارداً»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 1
+          },
+          {
+            question: "4. ما سبب النصب؟",
+            options: ["خبر كان", "اسم كان", "مفعول به"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "خبر كان منصوب وعلامة نصبه الفتحة الظاهرة."
+      },
+      {
+        sentence: "لا طالبَ علمٍ مهملٌ.",
+        word: "طالبَ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «طالبَ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 1
+          },
+          {
+            question: "3. ما موقعها الإعرابي؟ (بعد لا النافية للجنس)",
+            options: ["مبني على الفتح في محل نصب", "منصوب بالفتحة", "مرفوع"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "اسم لا النافية للجنس مبني على الفتح في محل نصب."
+      },
+      {
+        sentence: "حضر الطلابُ إلا طالباً.",
+        word: "طالباً",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «طالباً»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 1
+          },
+          {
+            question: "4. ما سبب النصب؟ (بعد إلا)",
+            options: ["مستثنى", "مفعول به", "حال"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "مستثنى منصوب وعلامة نصبه الفتحة الظاهرة."
+      },
+      {
+        sentence: "أنتَ طالبٌ مجتهدٌ.",
+        word: "أنتَ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «أنتَ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هو «معرب» أم «مبني»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 1
+          },
+          {
+            question: "3. ما نوع هذا الاسم المبني؟",
+            options: ["ضمير", "اسم إشارة", "اسم موصول"],
+            correctIndex: 0
+          },
+          {
+            question: "4. ما موقعه الإعرابي؟",
+            options: ["في محل رفع مبتدأ", "في محل نصب", "لا محل له"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "ضمير منفصل مبني على الفتح في محل رفع مبتدأ."
+      },
+      {
+        sentence: "المدرستان جميلتان.",
+        word: "المدرستان",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «المدرستان»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 0
+          },
+          {
+            question: "4. ما سبب الرفع؟",
+            options: ["مبتدأ", "خبر", "فاعل"],
+            correctIndex: 0
+          },
+          {
+            question: "5. ما علامة رفعها؟ (مثنى)",
+            options: ["الضمة", "الواو", "الألف"],
+            correctIndex: 2
+          }
+        ],
+        finalIraab: "مبتدأ مرفوع وعلامة رفعه الألف لأنه مثنى."
+      },
+      {
+        sentence: "أبوك رجلٌ كريمٌ.",
+        word: "أبوك",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «أبوك»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 0
+          },
+          {
+            question: "4. ما سبب الرفع؟",
+            options: ["مبتدأ", "خبر", "فاعل"],
+            correctIndex: 0
+          },
+          {
+            question: "5. ما علامة رفعها؟ (من الأسماء الخمسة)",
+            options: ["الضمة", "الواو", "الألف"],
+            correctIndex: 1
+          }
+        ],
+        finalIraab: "مبتدأ مرفوع وعلامة رفعه الواو لأنه من الأسماء الخمسة."
+      },
+      {
+        sentence: "المسلماتُ مؤمناتٌ.",
+        word: "المسلماتُ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «المسلماتُ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 0
+          },
+          {
+            question: "2. هل هي «معربة» أم «مبنية»؟",
+            options: ["معرب", "مبني"],
+            correctIndex: 0
+          },
+          {
+            question: "3. ما حالتها الإعرابية؟",
+            options: ["مرفوع", "منصوب", "مجرور"],
+            correctIndex: 0
+          },
+          {
+            question: "4. ما سبب الرفع؟",
+            options: ["مبتدأ", "خبر", "فاعل"],
+            correctIndex: 0
+          },
+          {
+            question: "5. ما علامة رفعها؟ (جمع مؤنث سالم)",
+            options: ["الضمة", "الواو", "الألف"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة لأنه جمع مؤنث سالم."
+      },
+      {
+        sentence: "الطالباتِ يدرسْنَ.",
+        word: "يدرسْنَ",
+        steps: [
+          {
+            question: "1. ما نوع كلمة «يدرسْنَ»؟",
+            options: ["اسم", "فعل", "حرف"],
+            correctIndex: 1
+          },
+          {
+            question: "2. ما زمن هذا الفعل؟",
+            options: ["ماضٍ", "مضارع", "أمر"],
+            correctIndex: 1
+          },
+          {
+            question: "3. هل هو «معرب» أم «مبني»؟ (اتصلت به نون النسوة)",
+            options: ["معرب", "مبني"],
+            correctIndex: 1
+          },
+          {
+            question: "4. على ماذا بُني؟",
+            options: ["على السكون", "على الفتح", "على الضم"],
+            correctIndex: 0
+          }
+        ],
+        finalIraab: "فعل مضارع مبني على السكون لاتصاله بنون النسوة."
+      }
+    ];
+
+    // 2. متغيرات حالة التدريب
+    let currentQuizIndex = 0;
+    let currentStepIndex = 0;
+    let quizActive = true;
+
+    // 3. جلب عناصر الـ HTML للتدريب
+    const quizSentenceEl = document.getElementById('quiz-sentence');
+    const quizQuestionEl = document.getElementById('quiz-question');
+    const quizOptionsEl = document.getElementById('quiz-options');
+    const quizFeedbackEl = document.getElementById('quiz-feedback');
+    const nextQuizBtn = document.getElementById('next-quiz');
+    const prevQuizBtn = document.getElementById('prev-quiz');
+    const quizCounterEl = document.getElementById('quiz-counter');
+
+    // 4. وظائف التدريب
+    function startInteractiveQuiz(index) {
+      currentQuizIndex = index;
+      currentStepIndex = 0;
+      quizActive = true;
+      
+      // تحديث أزرار التنقل
+      quizCounterEl.textContent = `التدريب ${index + 1} / ${quizData.length}`;
+      prevQuizBtn.disabled = (index === 0);
+      nextQuizBtn.disabled = (index === quizData.length - 1);
+      
+      const quiz = quizData[currentQuizIndex];
+      
+      // 1. عرض الجملة وتظليل الكلمة
+      quizSentenceEl.innerHTML = quiz.sentence.replace(quiz.word, `<span class="highlight">${quiz.word}</span>`);
+      
+      // 2. عرض الخطوة الأولى
+      renderQuizStep();
+    }
+
+    function renderQuizStep() {
+      quizFeedbackEl.innerHTML = '';
+      const quiz = quizData[currentQuizIndex];
+      const step = quiz.steps[currentStepIndex];
+
+      // 1. عرض السؤال
+      quizQuestionEl.textContent = step.question;
+
+      // 2. عرض الخيارات
+      quizOptionsEl.innerHTML = '';
+      step.options.forEach((option, index) => {
+        const optionBtn = document.createElement('button');
+        optionBtn.className = 'quiz-option';
+        optionBtn.textContent = option;
+        optionBtn.onclick = () => handleOptionSelect(index);
+        quizOptionsEl.appendChild(optionBtn);
+      });
+    }
+
+    function handleOptionSelect(selectedIndex) {
+      if (!quizActive) return;
+
+      const quiz = quizData[currentQuizIndex];
+      const step = quiz.steps[currentStepIndex];
+
+      if (selectedIndex === step.correctIndex) {
+        // إجابة صحيحة
+        quizFeedbackEl.innerHTML = `<span style="color: var(--accent1); font-size: 1.1rem;">✓ إجابة صحيحة!</span>`;
+        
+        // تأثير نجاح
+        const correctBtn = quizOptionsEl.children[selectedIndex];
+        correctBtn.style.background = 'var(--accent1)';
+        correctBtn.style.color = 'white';
+        
+        setTimeout(() => {
+          currentStepIndex++;
+          if (currentStepIndex < quiz.steps.length) {
+            renderQuizStep();
+          } else {
+            showFinalIraab();
+          }
+        }, 800);
+      } else {
+        // إجابة خاطئة
+        quizFeedbackEl.innerHTML = `<span style="color: #f87171;">✗ حاول مرة أخرى! فكر جيداً.</span>`;
+        
+        // اهتزاز بسيط للزر الخطأ
+        const wrongBtn = quizOptionsEl.children[selectedIndex];
+        wrongBtn.style.background = '#ef4444';
+        wrongBtn.style.color = 'white';
+        
+        wrongBtn.animate([
+          { transform: 'translateX(0)' },
+          { transform: 'translateX(-10px)' },
+          { transform: 'translateX(10px)' },
+          { transform: 'translateX(0)' }
+        ], { duration: 300 });
+        
+        setTimeout(() => {
+          wrongBtn.style.background = '';
+          wrongBtn.style.color = '';
+        }, 1000);
+      }
+    }
+
+    function showFinalIraab() {
+      quizActive = false;
+      const quiz = quizData[currentQuizIndex];
+      quizQuestionEl.innerHTML = '<span style="color: var(--accent1); font-size: 1.3rem;">🎉 أحسنت! لقد وصلت للإعراب الصحيح.</span>';
+      quizOptionsEl.innerHTML = '';
+      quizFeedbackEl.innerHTML = `<div class="final-answer"><strong>الإعراب الكامل:</strong><br>${quiz.finalIraab}</div>`;
+    }
+
+    // 5. ربط أزرار التنقل
+    nextQuizBtn.addEventListener('click', () => {
+      if (currentQuizIndex < quizData.length - 1) {
+        startInteractiveQuiz(currentQuizIndex + 1);
+      }
+    });
+
+    prevQuizBtn.addEventListener('click', () => {
+      if (currentQuizIndex > 0) {
+        startInteractiveQuiz(currentQuizIndex - 1);
+      }
+    });
+
+    // 6. بدء التدريب التفاعلي الأول عند تحميل الصفحة
+    startInteractiveQuiz(0);
+
+  </script>
+</body>
+</html>
