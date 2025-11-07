@@ -439,12 +439,16 @@
       box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
       border-color: var(--accent2);
     }
-    #quiz-feedback {
+   #quiz-feedback {
       text-align: center;
       margin-top: 20px;
       font-size: 1.3rem;
       font-weight: 700;
       line-height: 1.7;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     #quiz-feedback .final-answer {
       color: var(--accent1);
@@ -454,9 +458,41 @@
       border: 1px solid var(--accent1);
       animation: fadeIn 0.5s ease-in;
     }
+    #quiz-feedback .correct-answer {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+      border: 3px solid var(--accent1);
+      padding: 20px 30px;
+      border-radius: 15px;
+      color: var(--accent1);
+      font-size: 1.8rem;
+      font-weight: 900;
+      animation: correctPulse 0.6s ease-out;
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+    }
+    #quiz-feedback .wrong-answer {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+      border: 3px solid #ef4444;
+      padding: 20px 30px;
+      border-radius: 15px;
+      color: #ef4444;
+      font-size: 1.8rem;
+      font-weight: 900;
+      animation: wrongShake 0.5s ease-out;
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+    }
     @keyframes fadeIn {
       from { opacity: 0; transform: scale(0.9); }
       to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes correctPulse {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes wrongShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-15px); }
+      75% { transform: translateX(15px); }
     }
     #quiz-nav {
       text-align: center;
@@ -570,7 +606,7 @@
     /******** DATA (مُحدَّث ومُفصَّل) ********/
 const grammarData = {
   id: 'root',
-  title: 'الكلمة',
+  title: 'الكلمة أو الجملة',
   children: [
     {
       id: 'ism',
@@ -932,6 +968,29 @@ const grammarData = {
                             }
                           ]
                         },
+                         {
+      id: 'r-rubba',
+      title: 'الاسم بعد رُبَّ',
+      info: 'نحو: رُبَّ رجلٍ كريمٍ لقيتُه',
+      explanation: '"رُبَّ" حرف جرّ يفيد التقليل أو التكثير، والاسم بعدها يُجرّ. **مثال:** (رجلٍ) في "رُبَّ رجلٍ كريمٍ لقيتُه".'
+    },
+    {
+      id: 'r-khala-ada-hasha',
+      title: 'الاسم بعد خلا و عدا و حاشا',
+      info: 'نحو: نجح الطلابُ عدا محمدٍ',
+      explanation: 'تُعامل (خلا، عدا، حاشا) معاملة حروف الجر إذا لم تسبقها "ما"، فيُجرّ الاسم بعدها. **مثال:** (محمدٍ) في "نجح الطلابُ عدا محمدٍ".'
+    },{
+      id: 'r-huruf-qasam',
+      title: 'الاسم بعد حروف القسم',
+      info: 'نحو: واللهِ، تاللهِ، باللهِ',
+      explanation: 'كل اسم يأتي بعد حروف القسم (الواو، التاء، الباء) يكون مجرورًا. **مثال:** (اللهِ) في "واللهِ لأقولنّ الحق".'
+    },
+    {
+      id: 'r-hatta',
+      title: 'الاسم بعد حتى (حرف جر)',
+      info: 'نحو: أكلتُ السمكةَ حتى رأسِها',
+      explanation: 'تكون (حتى) حرف جر أحيانًا، ويُجرّ الاسم بعدها إن دلّ على جزء من كلّ. **مثال:** (رأسِها) في "أكلتُ السمكةَ حتى رأسِها".'
+    },
                         {
                           id: 'r-tabe-majroor',
                           title: 'تابع لمجرور',
@@ -1062,6 +1121,7 @@ const grammarData = {
         }
       ]
     },
+    
     {
       id: 'harf',
       title: 'حرف',
@@ -1121,10 +1181,88 @@ const grammarData = {
           title: 'حروف التشبيه',
           info: 'مثال: كأن، كـ',
           children: [{ id: 'h9a', title: 'حسب نوع الحرف', explanation: '(كأنَّ) هي حرف ناسخ من أخوات "إن" (تنصب الاسم وترفع الخبر) وتفيد التشبيه. أما (الكاف) فهي حرف جر يفيد التشبيه (مثل: زيدٌ كالأسدِ).' }]
+        },
+        
+      ]
+    },
+        {
+      id: 'jomal-mahall',
+      title: 'الجمل التي لها محل من الإعراب',
+      info: 'سبعة أنواع من الجمل',
+      explanation: 'هي الجمل التي تحل محل الاسم المفرد في الإعراب، فتأخذ حكمه الإعرابي. وهي سبعة أنواع: الخبر، الحال، النعت، المفعول به، المضاف إليه، جواب الشرط، والتابعة لجملة لها محل.',
+      children: [
+        {
+          id: 'j1',
+          title: '1️⃣ الجملة الواقعة خبراً',
+          info: 'في محل رفع أو نصب',
+          explanation: 'تكون في محل رفع إذا كانت خبراً للمبتدأ أو لإن وأخواتها. وتكون في محل نصب إذا كانت خبراً لكان وأخواتها.',
+          children: [
+            { id: 'j1-ex1', title: 'مثال 1: القمر نوره ساطع', info: 'جملة "نوره ساطع" في محل رفع خبر المبتدأ' },
+            { id: 'j1-ex2', title: 'مثال 2: إن الطالب يجتهد', info: 'جملة "يجتهد" في محل رفع خبر إن' },
+            { id: 'j1-ex3', title: 'مثال 3: كان المدرس يشرح الدرس', info: 'جملة "يشرح الدرس" في محل نصب خبر كان' }
+          ]
+        },
+        {
+          id: 'j2',
+          title: '2️⃣ الجملة الواقعة حالاً',
+          info: 'في محل نصب',
+          explanation: 'شروطها: أن يكون صاحب الحال معرفة، وأن تشتمل على رابط (ضمير أو واو الحال).',
+          children: [
+            { id: 'j2-ex1', title: 'مثال 1: جئت والشمس مشرقة', info: 'جملة "الشمس مشرقة" في محل نصب حال' },
+            { id: 'j2-ex2', title: 'مثال 2: رأيت الطلاب يذاكرون', info: 'جملة "يذاكرون دروسهم" في محل نصب حال' }
+          ]
+        },
+        {
+          id: 'j3',
+          title: '3️⃣ الجملة الواقعة نعتاً',
+          info: 'في محل رفع أو نصب أو جر',
+          explanation: 'شروطها: أن يكون المنعوت نكرة، وأن يكون في الجملة ضمير عائد على المنعوت.',
+          children: [
+            { id: 'j3-ex', title: 'مثال: رأيت طيوراً تغرد', info: 'جملة "تغرد" في محل نصب نعت' }
+          ]
+        },
+        {
+          id: 'j4',
+          title: '4️⃣ الجملة الواقعة مفعولاً به',
+          info: 'في محل نصب',
+          explanation: 'تأتي مقول القول أو مفعول به ثانٍ لفعل يتعدى لمفعولين.',
+          children: [
+            { id: 'j4-ex1', title: 'مثال 1: قال الطالب: أنا ناجح', info: 'جملة "أنا ناجح" مقول القول في محل نصب مفعول به' },
+            { id: 'j4-ex2', title: 'مثال 2: ظننت خالداً يذاكر', info: 'جملة "يذاكر دروسه" في محل نصب مفعول به ثانٍ' }
+          ]
+        },
+        {
+          id: 'j5',
+          title: '5️⃣ الجملة الواقعة مضافاً إليه',
+          info: 'في محل جر',
+          explanation: 'تقع بعد ظرف أو بعد (متى، إذا، إذ، كلّما، لمّا، حيثما، أيان، أينما، أنى).',
+          children: [
+            { id: 'j5-ex', title: 'مثال: رأيتها حين جاءت', info: 'جملة "جاءت" في محل جر مضاف إليه' }
+          ]
+        },
+        {
+          id: 'j6',
+          title: '6️⃣ الجملة الواقعة جواب شرط',
+          info: 'في محل جزم',
+          explanation: 'شروطها: أن تسبق بأداة شرط جازمة، وأن تقترن بالفاء أو إذا الفجائية.',
+          children: [
+            { id: 'j6-ex1', title: 'مثال 1: من يضلل الله فلا هادي له', info: 'جملة "لا هادي له" في محل جزم جواب الشرط' },
+            { id: 'j6-ex2', title: 'مثال 2: إن تذاكر فستنجح', info: 'جملة "فستنجح" في محل جزم جواب الشرط' }
+          ]
+        },
+        {
+          id: 'j7',
+          title: '7️⃣ الجملة التابعة',
+          info: 'حسب إعراب المتبوع',
+          explanation: 'إذا وقعت الجملة تابعة لجملة لها محل من الإعراب فتعرب في محل رفع أو نصب أو جر، وفقاً لإعراب الجملة التابعة لها.',
+          children: [
+            { id: 'j7-ex', title: 'مثال: الطالب يذاكر ويأكل', info: 'جملة "يأكل" معطوفة على "يذاكر" في محل رفع' }
+          ]
         }
       ]
-    }
+    },
   ]
+  
 };
     /******** STATE ********/
     let currentPath = [];
@@ -1156,7 +1294,7 @@ const grammarData = {
     /******** RENDERING ********/
     function renderBreadcrumb(){
       breadcrumbEl.innerHTML = '';
-      const path = ['الكلمة', ...getNodeTitlePath()];
+      const path = ['الكلمة أو الجملة', ...getNodeTitlePath()];
       path.forEach((p, idx) => {
         const span = document.createElement('div');
         span.className = 'crumb';
